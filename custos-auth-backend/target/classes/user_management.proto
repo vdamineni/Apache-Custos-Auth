@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package org.apache.custos.user;
+
+import "user.proto";
+import "group.proto";
+
+option java_package = "org.apache.custos.user";
+
+service UserManagementService {
+    rpc CreateUser(org.apache.custos.user.UserProfile) returns (org.apache.custos.user.UserProfile);
+    rpc UpdateUser(org.apache.custos.user.UserProfile) returns (org.apache.custos.user.UserProfile);
+    rpc GetUserById(GetUserRequest) returns (org.apache.custos.user.UserProfile);
+    rpc CreateGroup(org.apache.custos.group.Group) returns (org.apache.custos.group.Group);
+    rpc GetGroupById(GetGroupRequest) returns (org.apache.custos.group.Group);
+}
+
+message GetUserRequest {
+    string user_id = 1;
+}
+
+message GetGroupRequest {
+    string group_id = 1;
+}
