@@ -1,156 +1,151 @@
-Apache Custos Auth System
-This project provides an end-to-end authentication system using Apache Custos, integrating both frontend and backend components. It facilitates secure user login, role-based access control, and group management functionalities.
+User and Group Management System
+This project provides a system for managing users and groups using gRPC services. The system is designed with Protobuf-based models to define user profiles and groups, supporting core and application-specific attributes. It also includes gRPC services for creating, updating, and fetching user profiles and groups.
 ________________________________________
-Table of Contents
-•	Features
-•	Technologies Used
-•	Folder Structure
-•	Setup and Installation
-•	Usage
-•	Environment Variables
-•	API Documentation
-•	Development Notes
+Objectives
+1.	Protobuf Models:
+o	Design the UserProfile model with core attributes like userId, firstName, lastName, email, etc.
+o	Extend the UserProfile model with additional attributes specific to the application's context.
+o	Create the Group model with attributes like name, description, and scopes.
+o	Establish relationships between UserProfile and Group models as required.
+2.	gRPC Services:
+o	Implement gRPC services for user management functionalities:
+	Create, update, and fetch user profiles.
+	Create and fetch groups.
 ________________________________________
-Features
-1.	Authentication:
-o	Secure login via Apache Custos.
-o	Role-based testing login functionality.
-2.	User Management:
-o	Create and retrieve user profiles.
-o	Role-based access for users (Admin, Doctor, Patient).
-3.	Group Management:
-o	Create and manage groups.
-o	Retrieve group details.
-4.	Frontend:
-o	React-based UI for login and dashboard.
-o	Interactive components for user and group management.
-5.	Backend:
-o	gRPC-based backend to handle user and group-related operations.
-o	REST APIs for communication with the frontend.
-________________________________________
-Technologies Used
-Backend:
-•	Node.js
-•	Express.js
-•	gRPC
-•	Apache Custos API
-•	axios for REST requests
-Frontend:
-•	React
-•	React Router DOM
-•	grpc-web
-•	axios for API calls
-________________________________________
-Folder Structure
-bash
+Deliverables
+1. Protobuf Model Files
+The following Protobuf files are included in the project:
+•	user_management.proto: Defines the UserProfile and Group models, along with their attributes and relationships.
+UserProfile Model
+protobuf
 Copy code
-Apache-Custos-Auth/
-├── custos-auth-backend/   # Backend codebase
-│   ├── node_modules/
-│   ├── proto/             # gRPC Protobuf files
-│   ├── src/
-│   ├── server.js          # Main backend server script
-│   └── .env               # Environment variables for backend
-├── custos-auth-frontend/  # Frontend codebase
-│   ├── src/
-│   │   ├── components/    # React components (UserForm, GroupForm, etc.)
-│   │   ├── Login.js       # Login component
-│   │   ├── Logout.js      # Logout component
-│   │   ├── Dashboard.js   # Dashboard page
-│   │   ├── utils/         # Utility files
-│   ├── public/
-│   └── .env               # Environment variables for frontend
-└── README.md
+message UserProfile {
+  string user_id = 1;
+  string first_name = 2;
+  string last_name = 3;
+  string email = 4;
+  string role = 5;
+  string phone_number = 6;
+}
+Group Model
+protobuf
+Copy code
+message Group {
+  string name = 1;
+  string description = 2;
+  repeated string scopes = 3;
+}
+Relationship Example
+•	Users can be associated with multiple groups, and groups can have multiple members.
 ________________________________________
-Setup and Installation
+2. gRPC Services
+Implemented services include:
+•	User Management:
+o	CreateUser(UserProfile) returns (UserProfile)
+o	UpdateUser(UserProfile) returns (UserProfile)
+o	GetUserById(GetUserRequest) returns (UserProfile)
+•	Group Management:
+o	CreateGroup(Group) returns (Group)
+o	GetGroupById(GetGroupRequest) returns (Group)
+Example user_management.proto Service Definition
+protobuf
+Copy code
+service UserManagementService {
+  rpc CreateUser(UserProfile) returns (UserProfile);
+  rpc UpdateUser(UserProfile) returns (UserProfile);
+  rpc GetUserById(GetUserRequest) returns (UserProfile);
+  rpc CreateGroup(Group) returns (Group);
+  rpc GetGroupById(GetGroupRequest) returns (Group);
+}
+________________________________________
+3. Documentation
+•	Endpoints:
+o	/CreateUser: Accepts UserProfile data and stores the user information.
+o	/GetUserById: Fetches user details by user_id.
+o	/CreateGroup: Creates a new group with the specified attributes.
+o	/GetGroupById: Retrieves group details by group_id.
+•	Example Usage:
+o	Create User:
+json
+Copy code
+{
+  "user_id": "123",
+  "first_name": "John",
+  "last_name": "Doe",
+  "email": "john.doe@example.com",
+  "role": "admin",
+  "phone_number": "123-456-7890"
+}
+o	Create Group:
+json
+Copy code
+{
+  "name": "Admins",
+  "description": "Group for admin users",
+  "scopes": ["read", "write", "execute"]
+}
+________________________________________
+Setup Instructions
 Prerequisites
 •	Node.js installed (version >= 16.x)
 •	npm or yarn
-•	Apache Custos tenant configured with proper client ID and redirect URI.
-Steps to Run Locally
-Backend
-1.	Navigate to the backend directory:
+Steps to Run the gRPC Services
+1.	Clone the Repository:
 bash
 Copy code
-cd custos-auth-backend
-2.	Install dependencies:
+git clone https://github.com/vdamineni/Apache-Custos-Auth.git
+cd Apache-Custos-Auth/custos-auth-backend
+2.	Install Dependencies:
 bash
 Copy code
 npm install
-3.	Configure .env file with required values:
-bash
+3.	Configure Environment Variables: Create a .env file in the custos-auth-backend directory:
+makefile
 Copy code
+PORT=8082
+GRPC_PORT=50051
 CUSTOS_BASE_URL=https://api.playground.usecustos.org
 CLIENT_ID=<your-client-id>
 REDIRECT_URI=http://localhost:8082/callback
-4.	Start the backend server:
+4.	Run the Backend Server:
 bash
 Copy code
 node server.js
-Frontend
-1.	Navigate to the frontend directory:
-bash
-Copy code
-cd custos-auth-frontend
-2.	Install dependencies:
+5.	Run gRPC Services:
+o	Ensure the gRPC server is running on 50051.
+6.	Frontend Setup:
+o	Navigate to the custos-auth-frontend directory.
+o	Install dependencies:
 bash
 Copy code
 npm install
-3.	Configure .env file with the backend URL:
-arduino
-Copy code
-REACT_APP_API_BASE_URL=http://localhost:8082
-4.	Start the frontend server:
+o	Start the frontend:
 bash
 Copy code
 npm start
-5.	Open the app in your browser:
-o	Frontend: http://localhost:3000
-o	Backend: http://localhost:8082
+o	Access the application at http://localhost:3000.
 ________________________________________
-Usage
-Login
-1.	Use the Login page to authenticate via Apache Custos.
-2.	Select roles (Admin, Doctor, Patient) for testing purposes.
-Dashboard
-1.	Access user and group management functionalities.
-2.	Create and manage users or groups.
-________________________________________
-Environment Variables
-Backend (custos-auth-backend/.env)
-env
+Development Notes
+•	Protobuf Compilation:
+o	Use grpc-tools to compile .proto files:
+bash
 Copy code
-CUSTOS_BASE_URL=https://api.playground.usecustos.org
-CLIENT_ID=<your-client-id>
-REDIRECT_URI=http://localhost:8082/callback
-PORT=8082
-GRPC_PORT=50051
-Frontend (custos-auth-frontend/.env)
-env
+npx grpc_tools_node_protoc --js_out=import_style=commonjs,binary --grpc_out=grpc_js:. proto/user_management.proto
+•	CORS Configuration:
+o	Ensure CORS is enabled for frontend-backend communication.
+•	Testing:
+o	Use grpcurl for testing gRPC services:
+bash
 Copy code
-REACT_APP_API_BASE_URL=http://localhost:8082
-REACT_APP_CLIENT_ID=<your-client-id>
+grpcurl -plaintext -import-path ./proto -proto user_management.proto localhost:50051 list
 ________________________________________
-API Documentation
-Backend Endpoints
-1.	Login:
-o	URL: /login
-o	Method: GET
-2.	Callback:
-o	URL: /callback
-o	Method: GET
-3.	Logout:
-o	URL: /logout
-o	Method: GET
-gRPC Services
-•	UserManagementService:
-o	CreateUser
-o	GetUserById
-o	UpdateUser
-•	GroupManagementService:
-o	CreateGroup
-o	GetGroupById
+Contribution
+1.	Fork the repository.
+2.	Create a branch for your feature or fix.
+3.	Submit a pull request with detailed changes.
 ________________________________________
 License
 This project is licensed under the Apache License 2.0. See the LICENSE file for more details.
+
+
 
