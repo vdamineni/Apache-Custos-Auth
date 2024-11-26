@@ -34,7 +34,76 @@ app.use(
   })
 );
 
+// Code chage for Phase 2
 
+// REST Endpoint for creating a user
+app.post('/api/v1/users', (req, res) => {
+  const user = req.body; // Extract user data from the request body
+
+  // Validate required fields
+  if (!user.userId || !user.firstName || !user.lastName || !user.email) {
+    return res.status(400).json({ message: 'Missing required user fields' });
+  }
+
+  console.log('Received Create User request:', user);
+
+  // Simulate saving user data (for now, push it to the `users` array)
+  users.push(user);
+
+  // Respond with the created user
+  res.status(201).json({ message: 'User created successfully', user });
+});
+
+// End phase 2 code
+// Phase2 code for Group REST endpoint
+
+app.post('/grpc/createGroup', async (req, res) => {
+  const { name, description } = req.body;
+
+  // Validate request
+  if (!name || !description) {
+    return res.status(400).json({ message: 'Name and description are required.' });
+  }
+
+  const grpcClient = new userManagementProto.UserManagementService(
+    `localhost:${GRPC_PORT}`,
+    grpc.credentials.createInsecure()
+  );
+
+  const groupRequest = {
+    name,
+    description,
+    scopes: [], // Add default or provided scopes if needed
+  };
+
+  grpcClient.CreateGroup(groupRequest, (err, response) => {
+    if (err) {
+      console.error('Error creating group:', err);
+      return res.status(500).json({ message: 'Failed to create group.', error: err.message });
+    }
+
+    console.log('Group created successfully:', response);
+    res.status(200).json({ message: 'Group created successfully.', group: response });
+  });
+});
+
+// End Phase 2 code
+
+// Phase 2 code for endpoint for completeprofile
+
+app.post('/grpc/checkProfile', (req, res) => {
+  const { userId } = req.body;
+
+  const user = users.find((u) => u.user_id === userId);
+
+  if (!user || !user.first_name || !user.last_name || !user.email) {
+    return res.status(400).json({ message: 'Profile incomplete' });
+  }
+
+  res.status(200).json({ message: 'Profile complete' });
+});
+
+// end phase 2
 
 // Custos base URL and client configuration
 const custosBaseURL = process.env.CUSTOS_BASE_URL || 'https://api.playground.usecustos.org';
@@ -64,6 +133,21 @@ const createUserProfile = (call, callback) => {
   callback(null, user);
 };
 
+// code for phase 2
+
+const updateUser = (call, callback) => {
+    const updatedUser = call.request;
+    const index = users.findIndex((u) => u.user_id === updatedUser.user_id);
+    if (index !== -1) {
+        users[index] = updatedUser;
+        callback(null, updatedUser);
+    } else {
+        callback({ code: grpc.status.NOT_FOUND, message: 'User not found' });
+    }
+};
+
+// end code for phase 2
+
 const getUserProfile = (call, callback) => {
   const userId = call.request.userId;
   const user = users.find((u) => u.userId === userId);
@@ -88,6 +172,7 @@ const getGroup = (call, callback) => {
 const grpcServer = new grpc.Server();
 grpcServer.addService(userManagementProto.UserManagementService.service, {
   CreateUserProfile: createUserProfile,
+   UpdateUser: updateUser, // added for phasse 2
   GetUserProfile: getUserProfile,
   CreateGroup: createGroup,
   GetGroup: getGroup,
