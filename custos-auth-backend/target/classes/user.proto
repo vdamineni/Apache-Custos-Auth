@@ -12,4 +12,5 @@ message UserProfile {
     string email = 4;
     string role = 5;
     string phone_number = 6;
+  
 }
